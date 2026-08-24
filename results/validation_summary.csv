@@ -1,0 +1,12 @@
+task,system,evaluation_scope,metric,value
+task2_1,eight_member_soft_vote,674_example_validation,macro_f1,0.709
+task2_1,eight_member_soft_vote,674_example_validation,f1_yes,0.815
+task2_1,eight_member_soft_vote,674_example_validation,recall_yes,0.940
+task2_1,eight_member_soft_vote,674_example_validation,accuracy,0.748
+task2_2,geom_mean_top5,357_sexist_only_development,conditional_macro_f1,0.637
+task2_2,geom_mean_top5,357_sexist_only_development,f1_judgemental,0.469
+task2_2,task21_to_task22_cascade,three_class_routing_diagnostic,macro_f1,0.485
+task2_3,top8_soft_vote,398_facet_positive_development,facet_macro_f1,0.677
+task2_3,top8_soft_vote,398_facet_positive_development,micro_f1,0.700
+task2_3,top8_soft_vote,398_facet_positive_development,samples_f1,0.694
+task2_3,task21_to_task23_positive_audit,positive_only_routing_diagnostic,facet_macro_f1,0.674

@@ -1,0 +1,9 @@
+-r requirements.txt
+torch>=2.2,<3
+transformers>=4.40,<5
+sentence-transformers>=3,<4
+lightgbm>=4,<5
+xgboost>=2,<4
+iterative-stratification>=0.1.9,<1
+timm>=1,<2
+pyevall>=0.1.62,<1

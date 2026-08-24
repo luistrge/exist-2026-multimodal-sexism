@@ -1,0 +1,15 @@
+cff-version: 1.2.0
+message: "If you use this project, please cite the technical report."
+title: "Multimodal Sexism Identification and Characterization in Memes"
+type: report
+authors:
+  - name: "Serrano Team"
+year: 2026
+month: 5
+keywords:
+  - sexism detection
+  - multimodal learning
+  - memes
+  - EXIST 2026
+  - physiological signals
+repository-code: "https://github.com/luistrge/exist-2026-multimodal-sexism"

@@ -1,0 +1,26 @@
+.DS_Store
+.env
+.idea/
+.vscode/
+.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+
+outputs/
+runs/
+checkpoints/
+wandb/
+mlruns/
+
+*.pt
+*.pth
+*.ckpt
+*.joblib
+*.pkl
+*.npz
+
+data/
+dataset/
+datasets/
+EXIST 2026 Dataset V0.2/
