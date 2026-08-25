@@ -89,7 +89,12 @@ Do not compare a partial rerun with the reported ensemble unless the same retain
 Run the lightweight repository audit before committing changes:
 
 ```bash
+python scripts/audit_notebook_report_alignment.py
 python scripts/validate_repository.py
 ```
 
-This checks notebook validity, required files, report-aligned CSV values, excluded stale artifacts, and the presence of the final PDF.
+The notebook/report audit checks selected members, preserved metrics, confusion
+rows, routing losses, and final-distribution guards directly in the notebook JSON.
+The repository validator checks notebook validity, required files, report-aligned
+CSV values, excluded stale artifacts, README evidence sections, and the byte
+identity of the final PDF.

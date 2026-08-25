@@ -10,12 +10,21 @@ The final PDF is the canonical source for all public headline values. This docum
 | Task 2.3 top-eight facet ensemble, per-facet metrics, and positive-only routing audit | `04_task23_sexism_facets.ipynb` | `results/task23_per_facet.csv`, `results/validation_summary.csv` |
 | Final test prediction counts | Final PDF only | `results/submission_distribution.csv` |
 
+The field-level mapping is available in `results/report_traceability.csv`, and the
+notebook claims can be checked automatically with:
+
+```bash
+python scripts/audit_notebook_report_alignment.py
+```
+
 ## Curation decisions
 
 - The four latest executed analysis/modelling notebooks were retained and renamed in reading order.
 - Earlier unexecuted templates were excluded.
 - Intermediate submission artifacts and distributions superseded by the report were excluded.
+- A superseded Task 2.2 cascade distribution was replaced with a report-aligned submission audit because it came from an intermediate gate rather than the primary submitted run.
 - A stale Task 2.3 cascade output was removed from the curated notebook because it did not represent the final reported submission.
+- Final-export cells now compare their hard distributions with the canonical report counts and reject mismatched intermediate runs.
 - The report PDF was copied verbatim and is not regenerated from older LaTeX sources.
 - English narrative cells were added while preserving the audited code and valid execution evidence.
 
@@ -24,3 +33,6 @@ The final PDF is the canonical source for all public headline values. This docum
 The public tables in `README.md`, `docs/`, and `results/` reproduce the final report. Intermediate hyperparameter comparisons remain inside the notebooks as experimental evidence, but no superseded run is presented as the final system.
 
 The repository does not claim hidden test-set scores. Reported metrics are internal validation or held-out routing diagnostics.
+
+See `docs/EVIDENCE_AUDIT.md` for the distinction between executed output,
+executable source, and report-only submission evidence.

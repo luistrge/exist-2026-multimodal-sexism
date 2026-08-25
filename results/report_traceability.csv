@@ -1,0 +1,22 @@
+report_section,claim,evidence_file,evidence_location,evidence_type
+1 and 2,"Training/test sizes and English/Spanish counts",notebooks/00_project_overview.ipynb,"Dataset and task structure",report-aligned narrative
+1 and 3,"OCR is the most stable base signal",notebooks/01_eda_and_sensor_analysis.ipynb,"Sections 3 and 8",executed analysis and interpretation
+2,"Task 2.1 split 2696/674",notebooks/02_task21_binary_gate.ipynb,"setup output and final evaluation",executed output
+4,"Task 2.1 eight-member composition",notebooks/02_task21_binary_gate.ipynb,"late-fusion output",executed output
+4,"Task 2.1 threshold 0.371642",notebooks/02_task21_binary_gate.ipynb,"final metrics output",executed output
+4,"Task 2.1 macro-F1/F1 YES/recall/accuracy",notebooks/02_task21_binary_gate.ipynb,"final metrics and classification report",executed output
+4,"Task 2.1 confusion matrix 129/144/26/375",notebooks/02_task21_binary_gate.ipynb,"final confusion matrix",executed output
+4 and 7,"Task 2.1 sensor ablation 0.678 to 0.706",results/sensor_ablation.csv,"task2_1 row",report-aligned table
+2 and 5,"Task 2.2 split 1111/314/357",notebooks/03_task22_source_intention.ipynb,"data split output",executed output
+2 and 5,"37 candidates and 31 stable candidates",notebooks/03_task22_source_intention.ipynb,"candidate audit output",executed output
+5,"Task 2.2 selected five members",notebooks/03_task22_source_intention.ipynb,"candidate ranking and ensemble construction",executed output
+5,"Task 2.2 conditional macro-F1 0.637 and JUDGEMENTAL F1 0.469",notebooks/03_task22_source_intention.ipynb,"ensemble ranking output",executed output
+5 and 7,"Task 2.2 routed diagnostic 0.485 and 114 lost items",notebooks/03_task22_source_intention.ipynb,"mixed cascade diagnostic",executed output
+6,"Task 2.3 split 1592/398 over 1990 positives",notebooks/04_task23_sexism_facets.ipynb,"setup and report-aligned header",executed output and narrative
+6,"Task 2.3 selected eight members",notebooks/04_task23_sexism_facets.ipynb,"multilabel ensemble output",executed output
+6,"Task 2.3 macro/micro/samples F1",notebooks/04_task23_sexism_facets.ipynb,"final metrics output",executed output
+6,"Task 2.3 per-facet precision/recall/F1/support",notebooks/04_task23_sexism_facets.ipynb,"classification report",executed output
+6 and 7,"Task 2.3 positive-only routing audit 0.674",notebooks/04_task23_sexism_facets.ipynb,"routing diagnostic section",report-aligned diagnostic narrative and code
+7,"Cross-task physiological ablations",results/sensor_ablation.csv,"all rows",report-aligned table
+8,"Final submission distributions",results/submission_distribution.csv,"all rows",report-only canonical audit
+8,"Final report PDF identity",scripts/validate_repository.py,"SHA-256 check",automated integrity check
