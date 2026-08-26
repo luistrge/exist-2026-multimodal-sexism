@@ -13,7 +13,7 @@ The repository separates two goals:
 ## Public baseline
 
 ```bash
-python3.11 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 pip install -c constraints-baseline.txt -e .
 
@@ -30,7 +30,8 @@ The model uses a fixed threshold of 0.5; it does not tune that threshold on the
 674-example holdout. The audited seed-42 run is recorded in
 `results/reproducible_baseline_task21.json`. `constraints-baseline.txt` pins the
 runtime dependency versions used to generate that artifact; `pyproject.toml`
-retains supported ranges for normal installation.
+retains supported ranges for normal installation on Python 3.11 and 3.12, both
+covered by CI without applying the Python-3.12-specific constraint set.
 
 ## Expected data layout
 

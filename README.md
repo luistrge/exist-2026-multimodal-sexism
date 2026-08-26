@@ -382,7 +382,7 @@ After obtaining the official dataset:
 git clone https://github.com/luistrge/exist-2026-multimodal-sexism.git
 cd exist-2026-multimodal-sexism
 
-python3.11 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -c constraints-baseline.txt -e .
@@ -396,7 +396,7 @@ exist2026-baseline evaluate \
   --model-dir outputs/baseline-task21
 ```
 
-The audited seed-42 run uses a fixed 0.5 threshold and reaches **0.660 held-out macro-F1** on the same deterministic 2,696/674 split shape. Its complete result and environment are in [`results/reproducible_baseline_task21.json`](results/reproducible_baseline_task21.json); [`constraints-baseline.txt`](constraints-baseline.txt) pins the five runtime dependencies used for that run. This is a reproducibility reference, not a submitted system and not a replacement for the report's 0.709 model-selection result.
+The audited seed-42 run uses Python 3.12, a fixed 0.5 threshold, and reaches **0.660 held-out macro-F1** on the same deterministic 2,696/674 split shape. Its complete result and environment are in [`results/reproducible_baseline_task21.json`](results/reproducible_baseline_task21.json); [`constraints-baseline.txt`](constraints-baseline.txt) pins the five runtime dependencies used for that run. Normal installation supports Python 3.11 and 3.12 through the dependency ranges in `pyproject.toml`, which CI tests independently. This is a reproducibility reference, not a submitted system and not a replacement for the report's 0.709 model-selection result.
 
 ### Lightweight audit
 
