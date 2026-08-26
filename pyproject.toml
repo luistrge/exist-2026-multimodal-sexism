@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "exist2026-multimodal-sexism"
-version = "0.2.0"
+version = "1.0.0"
 description = "Audited EXIST 2026 meme experiments and a reproducible multimodal baseline"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -70,5 +70,6 @@ testpaths = ["tests"]
 source = ["exist2026"]
 
 [tool.coverage.report]
+fail_under = 80
 show_missing = true
 skip_covered = true

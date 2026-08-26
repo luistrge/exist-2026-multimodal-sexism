@@ -6,17 +6,21 @@ import csv
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 
 from audit_notebook_report_alignment import main as audit_notebook_report_alignment
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_SHA256 = "344ce1d849258436ac7db65d7f9c3d94c4ca979286fb2715db50eb8a896a8c00"
+PROJECT_VERSION = "1.0.0"
+MARKDOWN_LINK = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
 
 REQUIRED_FILES = [
     "README.md",
     "CITATION.cff",
     "pyproject.toml",
+    "constraints-baseline.txt",
     "requirements.txt",
     "requirements-heavy.txt",
     ".github/workflows/quality.yml",
@@ -125,6 +129,15 @@ EXPECTED_BASELINE_METRICS = {
     "accuracy": 0.6676557863501483,
 }
 
+EXPECTED_BASELINE_ENVIRONMENT = {
+    "python": "3.12.13",
+    "joblib": "1.5.3",
+    "numpy": "2.5.2",
+    "pillow": "11.3.0",
+    "scikit_learn": "1.9.0",
+    "scipy": "1.18.1",
+}
+
 EXPECTED_OFFICIAL_RESULTS = {
     ("task2_1", "soft-soft"): (
         "SerranoTeam_1",
@@ -179,6 +192,38 @@ def validate_report() -> None:
     report = ROOT / "report" / "serrano-team-exist2026-report.pdf"
     digest = hashlib.sha256(report.read_bytes()).hexdigest()
     require(digest == REPORT_SHA256, "The final report PDF differs from the audited source")
+
+
+def validate_versions() -> None:
+    """Keep package and citation versions aligned."""
+
+    pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    package = (ROOT / "src" / "exist2026" / "__init__.py").read_text(encoding="utf-8")
+    citation = (ROOT / "CITATION.cff").read_text(encoding="utf-8")
+    require(f'version = "{PROJECT_VERSION}"' in pyproject, "pyproject version mismatch")
+    require(f'__version__ = "{PROJECT_VERSION}"' in package, "package version mismatch")
+    require(f'version: "{PROJECT_VERSION}"' in citation, "citation version mismatch")
+
+
+def validate_local_links() -> None:
+    """Reject broken repository-relative links in public Markdown files."""
+
+    markdown_files = [ROOT / "README.md", *sorted((ROOT / "docs").glob("*.md"))]
+    markdown_files.extend(sorted((ROOT / "results").glob("*.md")))
+    for markdown in markdown_files:
+        text = markdown.read_text(encoding="utf-8")
+        for raw_target in MARKDOWN_LINK.findall(text):
+            target = raw_target.strip().strip("<>")
+            if target.startswith(("http://", "https://", "mailto:", "#")):
+                continue
+            relative = target.split("#", 1)[0]
+            if not relative:
+                continue
+            destination = (markdown.parent / relative).resolve()
+            require(
+                destination.exists(),
+                f"Broken local link in {markdown.relative_to(ROOT)}: {target}",
+            )
 
 
 def validate_notebooks() -> None:
@@ -354,7 +399,7 @@ def validate_metrics() -> None:
             )
         else:
             require(
-                status in {"not available in repository", "not submitted"},
+                status in {"internal only; not official", "not submitted"},
                 f"Unknown leaderboard status: {status}",
             )
     task23_scope = scoped[("task2_3", "top8_soft_vote", "facet_macro_f1")]
@@ -394,6 +439,26 @@ def validate_baseline() -> None:
     require(protocol["validation_examples"] == 674, "Baseline validation split changed")
     require(protocol["threshold"] == 0.5, "Baseline fixed threshold changed")
     require(protocol["threshold_tuned_on_validation"] is False, "Baseline threshold leaked")
+    require(
+        result["environment"] == EXPECTED_BASELINE_ENVIRONMENT,
+        "Baseline environment record changed",
+    )
+    constraints = {
+        line
+        for line in (ROOT / "constraints-baseline.txt").read_text(encoding="utf-8").splitlines()
+        if line and not line.startswith("#")
+    }
+    require(
+        constraints
+        == {
+            "joblib==1.5.3",
+            "numpy==2.5.2",
+            "Pillow==11.3.0",
+            "scikit-learn==1.9.0",
+            "scipy==1.18.1",
+        },
+        "Baseline constraints differ from the audited environment",
+    )
     for metric, expected in EXPECTED_BASELINE_METRICS.items():
         actual = float(result["metrics"][metric])
         require(
@@ -440,6 +505,8 @@ def validate_readme() -> None:
 def main() -> None:
     validate_files()
     validate_report()
+    validate_versions()
+    validate_local_links()
     validate_notebooks()
     validate_metrics()
     validate_baseline()

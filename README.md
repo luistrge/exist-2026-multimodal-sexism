@@ -385,7 +385,7 @@ cd exist-2026-multimodal-sexism
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install -e .
+pip install -c constraints-baseline.txt -e .
 
 exist2026-baseline train \
   --data-root "/path/to/EXIST 2026 Dataset V0.2" \
@@ -396,7 +396,7 @@ exist2026-baseline evaluate \
   --model-dir outputs/baseline-task21
 ```
 
-The audited seed-42 run uses a fixed 0.5 threshold and reaches **0.660 held-out macro-F1** on the same deterministic 2,696/674 split shape. Its complete result is in [`results/reproducible_baseline_task21.json`](results/reproducible_baseline_task21.json). This is a reproducibility reference, not a submitted system and not a replacement for the report's 0.709 model-selection result.
+The audited seed-42 run uses a fixed 0.5 threshold and reaches **0.660 held-out macro-F1** on the same deterministic 2,696/674 split shape. Its complete result and environment are in [`results/reproducible_baseline_task21.json`](results/reproducible_baseline_task21.json); [`constraints-baseline.txt`](constraints-baseline.txt) pins the five runtime dependencies used for that run. This is a reproducibility reference, not a submitted system and not a replacement for the report's 0.709 model-selection result.
 
 ### Lightweight audit
 

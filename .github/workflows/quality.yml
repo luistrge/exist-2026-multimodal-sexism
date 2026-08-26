@@ -22,7 +22,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
       - name: Install package and quality tools
-        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+        run: >-
+          python -m pip install --upgrade pip &&
+          python -m pip install -c constraints-baseline.txt -e ".[dev]"
       - name: Ruff
         run: >-
           ruff check src tests scripts/curate_notebook_outputs.py

@@ -1,6 +1,14 @@
 {
   "model": "tfidf_word_char_plus_visual_descriptor_logistic_regression",
   "evaluation_scope": "fixed-threshold held-out baseline validation",
+  "environment": {
+    "python": "3.12.13",
+    "joblib": "1.5.3",
+    "numpy": "2.5.2",
+    "pillow": "11.3.0",
+    "scikit_learn": "1.9.0",
+    "scipy": "1.18.1"
+  },
   "protocol": {
     "seed": 42,
     "train_examples": 2696,
@@ -19,6 +27,6 @@
     "labels": ["NO", "YES"],
     "values": [[175, 98], [126, 275]]
   },
-  "reproduction": "exist2026-baseline train --data-root <EXIST_RELEASE_ROOT> --output-dir outputs/baseline-task21",
+  "reproduction": "pip install -c constraints-baseline.txt -e . && exist2026-baseline train --data-root <EXIST_RELEASE_ROOT> --output-dir outputs/baseline-task21",
   "relationship_to_report": "Independent engineering baseline; not a submitted system and not a replacement for the report-aligned 0.709 model-selection result."
 }
