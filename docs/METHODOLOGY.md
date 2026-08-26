@@ -4,7 +4,14 @@
 
 EXIST 2026 defines three linked meme tasks. Task 2.1 detects sexism (`NO`/`YES`); Task 2.2 assigns the source intention (`DIRECT`/`JUDGEMENTAL`) to sexist memes; Task 2.3 assigns one or more sexism facets. Because the downstream labels are valid only for sexist items, the final system mirrors this hierarchy.
 
-All values below come from the final technical report. They are internal validation or held-out diagnostic values on labelled training data.
+All values below come from the final technical report. The headline F1 values are
+development/model-selection evidence: their partitions influenced thresholds,
+expert selection, or ensemble selection. Routed values are targeted diagnostics.
+None of those internal F1 or routing values is an official hidden-test score.
+
+Organizer-issued hidden-test results are reported separately: the best Serrano Team
+soft runs rank #14/139, #10/112, and #11/113 for Tasks 2.1–2.3. See
+`../results/RESULTS.md` for the soft/hard tables and provenance.
 
 ## Task 2.1 — Binary gate
 
@@ -55,7 +62,11 @@ Task 2.3 is trained on 1,990 sexist memes with at least one facet, using a 1,592
 7. E5 + CLIP classifier-chain logistic regression (`C=1`).
 8. E5 text one-vs-rest logistic regression (`C=1`).
 
-The selected ensemble reaches 0.677 facet macro-F1, 0.700 micro-F1, and 0.694 samples-F1. A positive-only gate audit yields 0.674 macro-F1; this is a coverage diagnostic, not a complete mixed `NO`/facet evaluation.
+The selected ensemble reaches 0.677 facet macro-F1, 0.700 micro-F1, and 0.694
+samples-F1 on the 398-example development/model-selection set. That same set is
+used to rank experts and tune the five thresholds, so these values are not an
+independent estimate of generalization. A positive-only gate audit yields 0.674
+macro-F1; this is a coverage diagnostic, not a complete mixed `NO`/facet evaluation.
 
 ## Physiological-signal ablation
 
@@ -72,7 +83,12 @@ The final systems therefore retain one sensor-aware Task 2.1 expert, use sensor 
 
 ## Evaluation scope
 
-Conditional scores assume that an item has already reached a downstream classifier. Routed scores include gate errors. The two scopes must not be treated as interchangeable. The report avoids describing these development values as cross-validation or hidden-test performance.
+Conditional scores assume that an item has already reached a downstream classifier.
+Routed scores include gate errors. The two scopes must not be treated as
+interchangeable. The report avoids describing these development values as
+cross-validation or hidden-test performance. Internal PyEvALL ICM/ICM-Soft values
+are also distinct from organizer-issued leaderboard results; see
+`EVALUATION_PROTOCOL.md`.
 
 ## Main limitations
 
@@ -80,3 +96,5 @@ Conditional scores assume that an item has already reached a downstream classifi
 - VLM descriptions depend on visual reasoning quality and cache consistency.
 - Rare facets, especially non-sexual-violence misogyny, remain the primary bottleneck.
 - Internal validation does not establish out-of-domain or operational reliability.
+- Development/model-selection reuse can make headline values optimistic,
+  especially Task 2.3.

@@ -1,0 +1,37 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Install package and quality tools
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+      - name: Ruff
+        run: >-
+          ruff check src tests scripts/curate_notebook_outputs.py
+          scripts/validate_repository.py scripts/audit_notebook_report_alignment.py
+      - name: Black
+        run: >-
+          black --check src tests scripts/curate_notebook_outputs.py
+          scripts/validate_repository.py scripts/audit_notebook_report_alignment.py
+      - name: Tests
+        run: pytest --cov=exist2026 --cov-report=term-missing
+      - name: Repository evidence audit
+        run: python scripts/curate_notebook_outputs.py --check && python scripts/validate_repository.py

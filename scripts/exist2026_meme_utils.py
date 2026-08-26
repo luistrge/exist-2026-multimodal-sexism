@@ -21,22 +21,26 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer
 
 
-PROJECT_ROOT = Path(
-    os.environ.get("EXIST2026_PROJECT_ROOT", Path(__file__).resolve().parents[1])
-).expanduser().resolve()
+PROJECT_ROOT = (
+    Path(os.environ.get("EXIST2026_PROJECT_ROOT", Path(__file__).resolve().parents[1]))
+    .expanduser()
+    .resolve()
+)
 REPO_ROOT = Path(os.environ.get("LNR_REPO_ROOT", PROJECT_ROOT.parent)).expanduser().resolve()
-DATASET_ROOT = Path(
-    os.environ.get("EXIST2026_DATASET_ROOT", REPO_ROOT / "EXIST 2026 Dataset V0.2")
-).expanduser().resolve()
+DATASET_ROOT = (
+    Path(os.environ.get("EXIST2026_DATASET_ROOT", REPO_ROOT / "EXIST 2026 Dataset V0.2"))
+    .expanduser()
+    .resolve()
+)
 if os.environ.get("EXIST2026_MEMES_ROOT"):
     MEMES_ROOT = Path(os.environ["EXIST2026_MEMES_ROOT"]).expanduser().resolve()
 elif (DATASET_ROOT / "training" / "EXIST2026_training.json").exists():
     MEMES_ROOT = DATASET_ROOT
 else:
     MEMES_ROOT = DATASET_ROOT / "EXIST 2026 Memes Dataset"
-_DEFAULT_EVAL_ROOT = Path(
-    os.environ.get("EXIST2026_EVAL_ROOT", DATASET_ROOT / "evaluation")
-).expanduser().resolve()
+_DEFAULT_EVAL_ROOT = (
+    Path(os.environ.get("EXIST2026_EVAL_ROOT", DATASET_ROOT / "evaluation")).expanduser().resolve()
+)
 if (
     not os.environ.get("EXIST2026_EVAL_ROOT")
     and not _DEFAULT_EVAL_ROOT.exists()
@@ -63,7 +67,8 @@ RUNS_DIR = PROJECT_ROOT / "runs" / f"exist2026_{TEAM_NAME}"
 
 SEED = 42
 DEV_SIZE = 0.20
-TEST_CASE = "EXIST2025"
+# Compatibility value required by the organizer-supplied 2026 release validator.
+ORGANIZER_LEGACY_TEST_CASE = "EXIST2025"
 
 TASKS = ("task2_1", "task2_2", "task2_3")
 TASK_NAMES = {
@@ -84,16 +89,17 @@ LABELS = {
     ],
 }
 FACET_LABELS = [label for label in LABELS["task2_3"] if label != "NO"]
-GOLD_FILES = {
-    "task2_1": EVAL_ROOT / "golds" / "EXIST2025_training_task2_1_gold_hard.json",
-    "task2_2": EVAL_ROOT / "golds" / "EXIST2025_training_task2_2_gold_hard.json",
-    "task2_3": EVAL_ROOT / "golds" / "EXIST2025_training_task2_3_gold_hard.json",
-}
-SOFT_GOLD_FILES = {
-    "task2_1": EVAL_ROOT / "golds" / "EXIST2025_training_task2_1_gold_soft.json",
-    "task2_2": EVAL_ROOT / "golds" / "EXIST2025_training_task2_2_gold_soft.json",
-    "task2_3": EVAL_ROOT / "golds" / "EXIST2025_training_task2_3_gold_soft.json",
-}
+
+
+def _organizer_gold_path(task: str, kind: str) -> Path:
+    """Discover organizer golds without coupling code to their legacy prefix."""
+
+    matches = sorted((EVAL_ROOT / "golds").glob(f"*training_{task}_gold_{kind}.json"))
+    return matches[0] if len(matches) == 1 else EVAL_ROOT / "golds" / f"missing_{task}_{kind}.json"
+
+
+GOLD_FILES = {task: _organizer_gold_path(task, "hard") for task in TASKS}
+SOFT_GOLD_FILES = {task: _organizer_gold_path(task, "soft") for task in TASKS}
 
 
 def ensure_dirs() -> None:
@@ -145,7 +151,9 @@ def load_meme_frame(split: str) -> pd.DataFrame:
     return frame
 
 
-def _label_above_threshold(labels: Iterable[str], valid_labels: Iterable[str], threshold: int) -> str | None:
+def _label_above_threshold(
+    labels: Iterable[str], valid_labels: Iterable[str], threshold: int
+) -> str | None:
     counts = Counter(label for label in labels if label in valid_labels)
     winners = [label for label, count in counts.items() if count > threshold]
     if len(winners) == 1:
@@ -250,7 +258,11 @@ def attach_gold(records: pd.DataFrame, task: str) -> pd.DataFrame:
 def attach_gold_and_soft(records: pd.DataFrame, task: str) -> pd.DataFrame:
     """Attach the official hard and soft labels used by the audited notebooks."""
     merged = attach_gold(records, task)
-    return merged.merge(load_soft_gold(task), on="id", how="left").sort_values("id").reset_index(drop=True)
+    return (
+        merged.merge(load_soft_gold(task), on="id", how="left")
+        .sort_values("id")
+        .reset_index(drop=True)
+    )
 
 
 def text_inputs(frame: pd.DataFrame) -> pd.Series:
@@ -307,7 +319,7 @@ def aggregate_sensorial(sensorial: dict[str, Any]) -> dict[str, float]:
     features["sens_users_count"] = float(len(users))
     modalities = sensorial.get("modalities") or {}
     for modality in ("ET", "HR", "EEG"):
-        by_user = ((modalities.get(modality) or {}).get("by_user") or {})
+        by_user = (modalities.get(modality) or {}).get("by_user") or {}
         features[f"sens_{modality}_users_count"] = float(len(by_user))
         values_by_feature: dict[str, list[float]] = defaultdict(list)
         for user_features in by_user.values():
@@ -362,7 +374,7 @@ def _lbp_hist(gray: np.ndarray, bins: int = 32) -> np.ndarray:
     ]
     for bit, (dy, dx) in enumerate(offsets):
         neighbor = gray[1 + dy : gray.shape[0] - 1 + dy, 1 + dx : gray.shape[1] - 1 + dx]
-        codes |= ((neighbor >= center).astype(np.uint8) << bit)
+        codes |= (neighbor >= center).astype(np.uint8) << bit
     return _normalized_hist(codes.ravel(), bins=bins, value_range=(0, 256))
 
 
@@ -456,17 +468,25 @@ def build_feature_frame(force: bool = False) -> pd.DataFrame:
     ensure_dirs()
     cache_path = CACHE_DIR / "meme_features.csv"
     if cache_path.exists() and not force:
-        records = pd.concat([load_meme_frame("training"), load_meme_frame("test")], ignore_index=True)
+        records = pd.concat(
+            [load_meme_frame("training"), load_meme_frame("test")], ignore_index=True
+        )
         cached = pd.read_csv(cache_path, dtype={"id": str})
         if {"id", "image_path"}.issubset(cached.columns) and len(cached) == len(records):
             expected_paths = records.set_index("id")["image_path"].astype(str)
             cached_paths = cached.set_index("id")["image_path"].astype(str)
             sample_ids = list(expected_paths.index[:20]) + list(expected_paths.index[-20:])
-            if all(item_id in cached_paths.index and cached_paths.loc[item_id] == expected_paths.loc[item_id] for item_id in sample_ids):
+            if all(
+                item_id in cached_paths.index
+                and cached_paths.loc[item_id] == expected_paths.loc[item_id]
+                for item_id in sample_ids
+            ):
                 return cached
         print("Feature cache does not match the current dataset paths; recomputing it.")
     else:
-        records = pd.concat([load_meme_frame("training"), load_meme_frame("test")], ignore_index=True)
+        records = pd.concat(
+            [load_meme_frame("training"), load_meme_frame("test")], ignore_index=True
+        )
 
     feature_rows = []
     for idx, row in records.iterrows():
@@ -494,14 +514,20 @@ def task_metric(task: str, y_true: Any, y_pred: Any) -> dict[str, float]:
         labels = LABELS[task]
         return {
             "main_metric": float(f1_score(y_true, y_pred, pos_label="YES", zero_division=0)),
-            "macro_f1": float(f1_score(y_true, y_pred, labels=labels, average="macro", zero_division=0)),
+            "macro_f1": float(
+                f1_score(y_true, y_pred, labels=labels, average="macro", zero_division=0)
+            ),
             "accuracy": float(accuracy_score(y_true, y_pred)),
         }
     if task == "task2_2":
         labels = LABELS[task]
         return {
-            "main_metric": float(f1_score(y_true, y_pred, labels=labels, average="macro", zero_division=0)),
-            "macro_f1": float(f1_score(y_true, y_pred, labels=labels, average="macro", zero_division=0)),
+            "main_metric": float(
+                f1_score(y_true, y_pred, labels=labels, average="macro", zero_division=0)
+            ),
+            "macro_f1": float(
+                f1_score(y_true, y_pred, labels=labels, average="macro", zero_division=0)
+            ),
             "accuracy": float(accuracy_score(y_true, y_pred)),
         }
     if task == "task2_3":
@@ -509,7 +535,9 @@ def task_metric(task: str, y_true: Any, y_pred: Any) -> dict[str, float]:
         y_true_bin = mlb.fit_transform(y_true)
         y_pred_bin = mlb.transform(y_pred)
         return {
-            "main_metric": float(f1_score(y_true_bin, y_pred_bin, average="macro", zero_division=0)),
+            "main_metric": float(
+                f1_score(y_true_bin, y_pred_bin, average="macro", zero_division=0)
+            ),
             "macro_f1": float(f1_score(y_true_bin, y_pred_bin, average="macro", zero_division=0)),
             "micro_f1": float(f1_score(y_true_bin, y_pred_bin, average="micro", zero_division=0)),
             "exact_match": float((y_true_bin == y_pred_bin).all(axis=1).mean()),
@@ -597,7 +625,7 @@ def write_hard_run(task: str, ids: Iterable[str], predictions: Iterable[Any], pa
     rows = []
     for item_id, pred in zip(ids, predictions):
         value = normalize_task23_prediction(pred) if task == "task2_3" else str(pred)
-        rows.append({"test_case": TEST_CASE, "id": str(item_id), "value": value})
+        rows.append({"test_case": ORGANIZER_LEGACY_TEST_CASE, "id": str(item_id), "value": value})
     write_json(rows, path)
 
 
@@ -607,7 +635,7 @@ def write_soft_run(task: str, ids: Iterable[str], probabilities: Iterable[Any], 
     for item_id, probs in zip(ids, probabilities):
         probs_arr = np.asarray(probs, dtype=float)
         value = {label: float(probs_arr[i]) for i, label in enumerate(labels)}
-        rows.append({"test_case": TEST_CASE, "id": str(item_id), "value": value})
+        rows.append({"test_case": ORGANIZER_LEGACY_TEST_CASE, "id": str(item_id), "value": value})
     write_json(rows, path)
 
 
@@ -615,7 +643,10 @@ def summarize_prediction_distribution(task: str, predictions: Iterable[Any]) -> 
     if task != "task2_3":
         counts = Counter(predictions)
         return pd.DataFrame(
-            [{"task": task, "label": label, "count": counts.get(label, 0)} for label in LABELS[task]]
+            [
+                {"task": task, "label": label, "count": counts.get(label, 0)}
+                for label in LABELS[task]
+            ]
         )
     counts = Counter()
     for pred in predictions:

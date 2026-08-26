@@ -1,6 +1,8 @@
 # Report alignment
 
-The final PDF is the canonical source for all public headline values. This document maps each report block to the curated evidence retained in the repository.
+The final project PDF is canonical for internal experiment claims. The official
+EXIST 2026 overview is canonical for hidden-test rankings. This document maps both
+evidence sources to the curated repository.
 
 | Report topic | Primary notebook | Repository summary |
 |---|---|---|
@@ -9,6 +11,9 @@ The final PDF is the canonical source for all public headline values. This docum
 | Task 2.2 candidate audit, stable pool, selected geometric ensemble, and routing loss | `03_task22_source_intention.ipynb` | `results/validation_summary.csv`, `docs/METHODOLOGY.md` |
 | Task 2.3 top-eight facet ensemble, per-facet metrics, and positive-only routing audit | `04_task23_sexism_facets.ipynb` | `results/task23_per_facet.csv`, `results/validation_summary.csv` |
 | Final test prediction counts | Final PDF only | `results/submission_distribution.csv` |
+| Metric scope and internal PyEvALL values | Executed Task 2.1/2.3 outputs | `results/evaluation_scope.csv`, `docs/EVALUATION_PROTOCOL.md` |
+| Official soft-soft and hard-hard results | EXIST 2026 overview Tables 6–11 | `results/RESULTS.md`, `results/official_leaderboard.csv` |
+| Reproducible engineering baseline | Independent CPU rerun | `src/exist2026/`, `results/reproducible_baseline_task21.json` |
 
 The field-level mapping is available in `results/report_traceability.csv`, and the
 notebook claims can be checked automatically with:
@@ -30,9 +35,14 @@ python scripts/audit_notebook_report_alignment.py
 
 ## Numerical policy
 
-The public tables in `README.md`, `docs/`, and `results/` reproduce the final report. Intermediate hyperparameter comparisons remain inside the notebooks as experimental evidence, but no superseded run is presented as the final system.
+Internal experiment tables reproduce the final report; official ranking tables
+reproduce the organizer's overview. Intermediate hyperparameter comparisons remain
+inside the notebooks, but no superseded run is presented as the final system.
 
-The repository does not claim hidden test-set scores. Reported metrics are internal validation or held-out routing diagnostics.
+The repository claims hidden-test performance only for the explicitly archived
+official runs. Report headline F1 metrics remain labelled development/model-selection
+performance, routing figures remain diagnostics, and PyEvALL by itself identifies
+only a metric implementation.
 
 See `docs/EVIDENCE_AUDIT.md` for the distinction between executed output,
 executable source, and report-only submission evidence.

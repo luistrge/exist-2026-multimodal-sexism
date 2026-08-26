@@ -1,0 +1,24 @@
+{
+  "model": "tfidf_word_char_plus_visual_descriptor_logistic_regression",
+  "evaluation_scope": "fixed-threshold held-out baseline validation",
+  "protocol": {
+    "seed": 42,
+    "train_examples": 2696,
+    "validation_examples": 674,
+    "threshold": 0.5,
+    "threshold_tuned_on_validation": false
+  },
+  "metrics": {
+    "macro_f1": 0.6601752064032268,
+    "f1_yes": 0.710594315245478,
+    "precision_yes": 0.7372654155495979,
+    "recall_yes": 0.685785536159601,
+    "accuracy": 0.6676557863501483
+  },
+  "confusion_matrix": {
+    "labels": ["NO", "YES"],
+    "values": [[175, 98], [126, 275]]
+  },
+  "reproduction": "exist2026-baseline train --data-root <EXIST_RELEASE_ROOT> --output-dir outputs/baseline-task21",
+  "relationship_to_report": "Independent engineering baseline; not a submitted system and not a replacement for the report-aligned 0.709 model-selection result."
+}

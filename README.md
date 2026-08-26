@@ -1,15 +1,28 @@
 # Multimodal Sexism Identification and Characterization in Memes
 
-**Serrano Team · Top-5 project in the LNR EXIST 2026 challenge**
+**Serrano Team submission to [EXIST 2026](https://nlp.uned.es/exist2026/) · Task 2 — Sexism Characterization in Memes**
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Jupyter](https://img.shields.io/badge/Jupyter-Notebooks-F37626?logo=jupyter&logoColor=white)](notebooks/00_project_overview.ipynb)
 [![Tasks](https://img.shields.io/badge/EXIST_2026-Tasks_2.1_·_2.2_·_2.3-6C4CCF)](https://nlp.uned.es/exist2026/)
 [![Evidence](https://img.shields.io/badge/Evidence-report--audited-18864B)](docs/EVIDENCE_AUDIT.md)
+[![Quality](https://github.com/luistrge/exist-2026-multimodal-sexism/actions/workflows/quality.yml/badge.svg)](https://github.com/luistrge/exist-2026-multimodal-sexism/actions/workflows/quality.yml)
 
 This repository presents Serrano Team's hierarchical multimodal system for the three [EXIST 2026](https://nlp.uned.es/exist2026/) meme tasks: binary sexism identification, source-intention classification, and multilabel sexism-facet classification. The project combines OCR text, meme images, multilingual language models, and physiological signals from eye tracking, heart rate, and EEG.
 
-The work was recognized as a **Top-5 project in the LNR challenge** built around EXIST 2026. The complete technical account is available in the [final report](report/serrano-team-exist2026-report.pdf). All headline values in this repository are aligned with that report.
+> ## Official EXIST 2026 results
+>
+> Serrano Team's best soft submissions obtained three competitive positions on the official all-language leaderboards:
+>
+> - **Task 2.1 — Binary sexism detection (soft): #14 of 139 participant runs**
+> - **Task 2.2 — Source-intention classification (soft): #10 of 112 participant runs**
+> - **Task 2.3 — Multilabel sexism categorization (soft): #11 of 113 participant runs**
+>
+> These are official run-level positions under the soft-soft protocol, not a team-level ranking. Full soft and hard metrics are recorded in [`results/RESULTS.md`](results/RESULTS.md) and the [official EXIST 2026 overview](https://clef-staging.pages.dev/paper152.pdf) (Tables 6–11).
+
+> **20-second TL;DR —** We address hierarchical sexism detection in English and Spanish memes with a recall-oriented binary gate followed by intention and multilabel facet ensembles. Our best official soft runs ranked **#14, #10, and #11** in Tasks 2.1–2.3; separately, the report-aligned systems reach **0.709, 0.637, and 0.677 development/model-selection macro-F1**. The main contribution is a validation-driven late-fusion design combining OCR, multilingual encoders, CLIP/DINOv2 visual features, language specialists, and selectively retained physiological signals while measuring routing loss and ablation value. The repository adds a reproducible **TF-IDF + visual descriptor + Logistic Regression** baseline, typed CLI, tests, Ruff/Black, and CI.
+
+> 📄 [Final technical report](report/serrano-team-exist2026-report.pdf) · [official EXIST 2026 overview](https://clef-staging.pages.dev/paper152.pdf) · [complete official results](results/RESULTS.md) · [report-to-code guide](docs/REPORT_ALIGNMENT.md)
 
 ![Hierarchical multimodal pipeline](assets/figures/final_pipeline_overview.png)
 
@@ -23,9 +36,9 @@ The final solution is a hierarchical late-fusion pipeline:
 2. Task 2.2 distinguishes `DIRECT` sexism from `JUDGEMENTAL` content that reports, condemns, or discusses sexism. This is the most semantically subtle stage and the main routing bottleneck.
 3. Task 2.3 assigns one or more sexism facets. It uses label-specific thresholds because prevalence and difficulty differ substantially across facets.
 
-This was not a search for the single largest model. Sparse OCR models, multilingual transformers, dense text and image embeddings, VLM-derived descriptions, and selected physiological descriptors were evaluated as experts. The final ensembles retain diversity while remaining anchored by models that generalize consistently across the calibration and development splits.
+This was not a search for the single largest model. Sparse OCR models, multilingual transformers, dense text and image embeddings, VLM-derived descriptions, and selected physiological descriptors were evaluated as experts. The final ensembles retain structural diversity; Task 2.2 additionally filters candidates by calibration-to-development stability.
 
-The strongest report-aligned internal results are **0.709 macro-F1** for the Task 2.1 gate, **0.637 conditional macro-F1** for Task 2.2, and **0.677 macro-F1** for Task 2.3. These are validation or held-out diagnostic results on labelled training data—not hidden test-set scores.
+The strongest report-aligned internal results are **0.709 macro-F1** for the Task 2.1 gate, **0.637 conditional macro-F1** for Task 2.2, and **0.677 macro-F1** for Task 2.3. All three headline values influenced model selection or thresholding. They are development/model-selection evidence on labelled training data—not independent holdout estimates and not hidden test-set scores.
 
 ## Challenge, data, and task hierarchy
 
@@ -47,9 +60,9 @@ The three modelling subsets also have different sizes. They must not be confused
 
 | Task | Reported modelling population | Split used in the selected experiment | Primary evaluation scope |
 |---|---:|---:|---|
-| Task 2.1 | Binary-labelled modelling subset | 2,696 fit / 674 validation | 674-example validation |
-| Task 2.2 | `DIRECT`/`JUDGEMENTAL` examples | 1,111 fit / 314 calibration / 357 development | 357 sexist-only development |
-| Task 2.3 | 1,990 facet-positive examples | 1,592 fit / 398 development | 398 facet-positive development |
+| Task 2.1 | Binary-labelled modelling subset | 2,696 fit / 674 development | 674-example model selection |
+| Task 2.2 | `DIRECT`/`JUDGEMENTAL` examples | 1,111 fit / 314 calibration / 357 development | 357-example model selection |
+| Task 2.3 | 1,990 facet-positive examples | 1,592 fit / 398 development | 398-example model selection |
 
 The exact dataset counts and task definitions are summarized in [`00_project_overview.ipynb`](notebooks/00_project_overview.ipynb). Data exploration, disagreement, OCR, image, and sensor analyses are retained in [`01_eda_and_sensor_analysis.ipynb`](notebooks/01_eda_and_sensor_analysis.ipynb).
 
@@ -57,17 +70,29 @@ The exact dataset counts and task definitions are summarized in [`00_project_ove
 
 | Component | Evaluation scope | Selected result |
 |---|---|---:|
-| Task 2.1 gate | 674-example validation split | **0.709 macro-F1** |
+| Task 2.1 gate | 674-example development/model-selection split | **0.709 macro-F1** |
 | Task 2.1 gate | `YES` class | **0.815 F1**, **0.940 recall** |
 | Task 2.1 gate | Overall | **0.748 accuracy** |
-| Task 2.2 ensemble | 357 sexist-only development examples | **0.637 macro-F1** |
+| Task 2.2 ensemble | 357 sexist-only development/model-selection examples | **0.637 macro-F1** |
 | Task 2.2 ensemble | `JUDGEMENTAL` class | **0.469 F1** |
 | Task 2.2 cascade | Three-class routing diagnostic | **0.485 macro-F1** |
-| Task 2.3 ensemble | 398 facet-positive development examples | **0.677 macro-F1** |
+| Task 2.3 ensemble | 398 facet-positive development/model-selection examples | **0.677 macro-F1** |
 | Task 2.3 ensemble | Multilabel | **0.700 micro-F1**, **0.694 samples-F1** |
 | Task 2.3 + gate | Positive-only routing diagnostic | **0.674 macro-F1** |
 
 All rounded values above come from the final report. The machine-readable versions are in [`results/validation_summary.csv`](results/validation_summary.csv), and their notebook locations are recorded in [`results/report_traceability.csv`](results/report_traceability.csv).
+
+### Internal F1, internal PyEvALL, and official results
+
+These categories are deliberately separate. “PyEvALL” identifies the metric implementation; it does not imply that the organizers evaluated the hidden test labels.
+
+| Task | Internal data role | Development/model-selection F1 | Internal PyEvALL ICM-Soft | Best official soft run | Best official hard run |
+|---|---|---:|---:|---:|---|
+| Task 2.1 | Ensemble and threshold selection on 674 examples | 0.709 | −0.045 | **#14/139**, ICM-Soft Norm 0.4871 | #21/212, ICM-Hard Norm 0.6044 |
+| Task 2.2 | Candidate and ensemble selection on 357 examples | 0.637 | Not retained | **#10/112**, ICM-Soft Norm 0.3820 | #26/181, ICM-Hard Norm 0.4194 |
+| Task 2.3 | Expert ranking and five threshold choices on 398 examples | 0.677 | −5.945 | **#11/113**, ICM-Soft Norm 0.2431 | #16/182, ICM-Hard Norm 0.3677 |
+
+The official figures above come from organizer evaluation on hidden test labels; the internal figures come from labelled training partitions and are not substitutes for them. The complete run-level record is in [`results/RESULTS.md`](results/RESULTS.md), while [`results/evaluation_scope.csv`](results/evaluation_scope.csv) provides a machine-readable mapping. See [`docs/EVALUATION_PROTOCOL.md`](docs/EVALUATION_PROTOCOL.md) for the claim policy.
 
 ## Experimental reasoning and decision logic
 
@@ -123,7 +148,7 @@ Downstream classifiers were evaluated twice where the report supports it:
 
 For Task 2.2, conditional macro-F1 is **0.637**, while the three-class routing diagnostic is **0.485**. The notebook records **114 of 357** sexist development examples lost to `NO` before intention classification. This gap identifies the cascade, rather than only the intention model, as the engineering target.
 
-For Task 2.3, the selected facet ensemble reaches **0.677** macro-F1 on facet-positive development data, and the positive-only gate diagnostic is **0.674**. The latter is a coverage audit; it should not be read as a complete mixed `NO`/facet score.
+For Task 2.3, the selected facet ensemble reaches **0.677 development/model-selection macro-F1** on facet-positive data, and the positive-only gate diagnostic is **0.674**. The latter is a coverage audit; it should not be read as a complete mixed `NO`/facet score.
 
 ### 7. Treat sensor features as an empirical hypothesis
 
@@ -161,7 +186,7 @@ The exact internal model identifiers—not only the friendly names above—are p
 
 The selected result uses an equal-weight average rather than a second-level meta-model. With a limited validation set, learned stacking weights can fit noise or reward models that are overconfident rather than complementary. Equal weights are transparent, preserve every retained expert's vote, and make the final decision reproducible from cached probability vectors.
 
-### Reported outcome
+### Reported development/model-selection outcome
 
 - Macro-F1: **0.709**
 - `YES` F1: **0.815**
@@ -169,7 +194,7 @@ The selected result uses an equal-weight average rather than a second-level meta
 - Accuracy: **0.748**
 - Selected `YES` threshold: **0.371642**
 
-The key outcome is not just the 0.709 headline value. The confusion matrix shows that the threshold serves the system-level goal: preserve sexist examples for the two characterization stages. The cost is lower specificity, which is visible in the 144 non-sexist examples routed as positive.
+The key outcome is not just the 0.709 headline value. The confusion matrix shows that the selected threshold serves the system-level goal: preserve sexist examples for the two characterization stages. The cost is lower specificity, which is visible in the 144 non-sexist examples routed as positive. Because the threshold is chosen using this development split, 0.709 is model-selection performance rather than an untouched holdout estimate.
 
 ![Task 2.1 gate diagnostics](assets/figures/task21_gate_diagnostics.png)
 
@@ -195,7 +220,7 @@ The ensemble is deliberately heterogeneous. Two VLM-enriched sparse models use d
 
 ### Conditional and routed outcomes
 
-On the 357 sexist-only development examples, the selected ensemble reaches:
+On the 357 sexist-only development/model-selection examples, the selected ensemble reaches:
 
 - Conditional macro-F1: **0.637**
 - `JUDGEMENTAL` F1: **0.469**
@@ -223,7 +248,9 @@ Task 2.3 operates on **1,990** positive examples and uses a **1,592 / 398** fit/
 
 The equal-weight top-eight vote combines multilingual text, image context, language-specific transformers, independent facet decisions, and a dependency-aware chain. Label-specific thresholds convert the averaged probabilities into the final multilabel prediction.
 
-### Aggregate and per-facet results
+> **Evaluation warning.** The same 398-example development set is used to rank experts, select the top eight, tune the five label thresholds, and calculate 0.677. The value is therefore **development/model-selection performance**, not an independent estimate of generalization. It remains here because it is the canonical value in the final report. A corrected future rerun must freeze expert selection and thresholds before evaluating a separate partition.
+
+### Aggregate development/model-selection results
 
 - Facet macro-F1: **0.677**
 - Micro-F1: **0.700**
@@ -257,7 +284,7 @@ The strongest contribution of the project is the consistency of the experimental
 7. **Error propagation is measured, not discussed abstractly.** Conditional and routed diagnostics quantify how much performance is lost at the gate.
 8. **Minority behaviour is reported directly.** `JUDGEMENTAL` F1 and every Task 2.3 facet row remain visible.
 
-These practices make the final system easier to trust and easier to improve. They also explain why the repository includes apparently simple models next to large encoders: an ensemble member is valuable for the errors it corrects, not for its architectural prestige.
+These practices make the final system easier to audit and improve. They also explain why the repository includes apparently simple models next to large encoders: an ensemble member is valuable for the errors it corrects, not for its architectural prestige. They do not remove the optimism introduced when a development partition also informs final selection; that limitation is now stated explicitly.
 
 ## Evidence, traceability, and credibility
 
@@ -283,7 +310,8 @@ The full evidence policy is described in [`docs/EVIDENCE_AUDIT.md`](docs/EVIDENC
 ### Evaluation claims this repository does not make
 
 - It does not present internal validation as an official hidden-test score.
-- It does not call the selected holdout experiments k-fold cross-validation.
+- It does not present PyEvALL ICM or ICM-Soft on internal labels as an organizer-issued leaderboard score.
+- It does not call the selected development/model-selection experiments k-fold cross-validation.
 - It does not treat final label counts as performance metrics.
 - It does not claim sensors universally improve multimodal classification.
 - It does not claim a cache-free laptop run can reproduce every dense expert.
@@ -327,17 +355,48 @@ The project-specific evidence remains the notebooks and final report. Links to e
 | [`notebooks/03_task22_source_intention.ipynb`](notebooks/03_task22_source_intention.ipynb) | Candidate benchmark, robustness audit, selected ensemble, and cascade loss |
 | [`notebooks/04_task23_sexism_facets.ipynb`](notebooks/04_task23_sexism_facets.ipynb) | Multilabel experts, per-label thresholds, facet metrics, and routing audit |
 | [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) | Compact technical specification of the final system |
+| [`docs/EVALUATION_PROTOCOL.md`](docs/EVALUATION_PROTOCOL.md) | Model-selection leakage, metric scopes, and protocol for an independent Task 2.3 estimate |
 | [`docs/EVIDENCE_AUDIT.md`](docs/EVIDENCE_AUDIT.md) | Evidence classes, second-pass findings, and reproducibility boundary |
 | [`docs/REPORT_ALIGNMENT.md`](docs/REPORT_ALIGNMENT.md) | Traceability from report sections to notebooks and tables |
 | [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) | Environment, data layout, caches, and execution modes |
 | [`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) | Intended use, limitations, and responsible-use notes |
-| [`results/`](results) | Report-aligned metrics, ablations, facet results, and submission audits |
-| [`scripts/`](scripts) | Shared utilities, restored Task 2.2 interface, and integrity checks |
+| [`results/RESULTS.md`](results/RESULTS.md) | Official soft/hard leaderboard positions, metrics, and interpretation |
+| [`results/`](results) | Machine-readable internal metrics, official results, ablations, and submission audits |
+| [`src/exist2026/`](src/exist2026) | Typed, installable CPU baseline and command-line interface |
+| [`tests/`](tests) | Synthetic release, unit tests, and end-to-end train/evaluate smoke test |
+| [`.github/workflows/quality.yml`](.github/workflows/quality.yml) | Python 3.11/3.12 lint, format, tests, coverage, and evidence audit |
+| [`scripts/`](scripts) | Shared experiment utilities and repository integrity checks |
 | [`report/`](report) | Byte-verified final technical report |
 
 The curated notebook sequence contains the latest executed analyses that support the report. Earlier templates, partial caches, stale submission outputs, and superseded numerical summaries are intentionally excluded.
 
 ## Reproduction and audit modes
+
+### Reproducible CPU baseline
+
+The engineering baseline is intentionally independent of the heavyweight submitted ensemble. It combines OCR word/character TF-IDF, a deterministic 44-dimensional visual descriptor, and balanced Logistic Regression. Images are represented with RGB/grayscale histograms, channel moments, edge density, brightness, aspect ratio, and a missing-image indicator; no model download or GPU is required.
+
+After obtaining the official dataset:
+
+```bash
+git clone https://github.com/luistrge/exist-2026-multimodal-sexism.git
+cd exist-2026-multimodal-sexism
+
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -e .
+
+exist2026-baseline train \
+  --data-root "/path/to/EXIST 2026 Dataset V0.2" \
+  --output-dir outputs/baseline-task21
+
+exist2026-baseline evaluate \
+  --data-root "/path/to/EXIST 2026 Dataset V0.2" \
+  --model-dir outputs/baseline-task21
+```
+
+The audited seed-42 run uses a fixed 0.5 threshold and reaches **0.660 held-out macro-F1** on the same deterministic 2,696/674 split shape. Its complete result is in [`results/reproducible_baseline_task21.json`](results/reproducible_baseline_task21.json). This is a reproducibility reference, not a submitted system and not a replacement for the report's 0.709 model-selection result.
 
 ### Lightweight audit
 
@@ -350,20 +409,31 @@ python scripts/audit_notebook_report_alignment.py
 python scripts/validate_repository.py
 ```
 
+### Engineering checks
+
+```bash
+pip install -e ".[dev]"
+ruff check src tests
+black --check src tests
+pytest --cov=exist2026 --cov-report=term-missing
+```
+
+The tests generate a small synthetic EXIST-style release and exercise data discovery, visual features, fixed-threshold metrics, model persistence, and the complete CLI round trip. GitHub Actions runs the same checks on Python 3.11 and 3.12 without accessing the real dataset.
+
 ### Notebook environment
 
 ```bash
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install -e ".[notebooks]"
 jupyter lab
 ```
 
-Start with [`00_project_overview.ipynb`](notebooks/00_project_overview.ipynb), then follow the numerical order. Install `requirements-heavy.txt` only when reproducing transformer, dense-embedding, tree-booster, or GPU branches:
+Start with [`00_project_overview.ipynb`](notebooks/00_project_overview.ipynb), then follow the numerical order. Install the `heavy` extra only when reproducing transformer, dense-embedding, tree-booster, PyEvALL, or GPU branches:
 
 ```bash
-pip install -r requirements-heavy.txt
+pip install -e ".[notebooks,heavy]"
 ```
 
 ### Data layout
@@ -388,11 +458,17 @@ LNR/
 
 Alternative locations can be configured with `EXIST2026_DATASET_ROOT`, `EXIST2026_MEMES_ROOT`, and `EXIST2026_EVAL_ROOT`. See [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.md) for the complete contract.
 
+The organizer's 2026 release retains `EXIST2025` in the validator filename, gold-file prefix, and required `test_case` value. The loaders discover gold files by task suffix, and the compatibility constant is named explicitly so this upstream legacy identifier cannot be confused with the project year.
+
 ### Heavy-artifact boundary
 
 An exact end-to-end rerun requires the frozen E5/MPNet text embeddings, CLIP/DINOv2/ViT image embeddings, transformer probability arrays, VLM-description cache, and checkpoints used by the audited experiments. These artifacts are omitted because of size, portability, and model/data licensing constraints.
 
 The checked-in notebooks preserve the final selection logic and valid executed evidence. They skip optional branches when caches are unavailable where possible. A partial rerun should not be compared with the report unless it contains the same retained experts and aligned example IDs.
+
+## Licensing status
+
+No open-source license has been applied yet because team ownership and consent have not been confirmed. Public visibility does not itself grant reuse rights. [`docs/LICENSING.md`](docs/LICENSING.md) records what must be agreed before adding a root `LICENSE`, including separate treatment of the dataset, external weights, caches, report, and figures.
 
 ## Limitations and next steps
 
@@ -418,5 +494,3 @@ Serrano Team. (2026). Multimodal Sexism Identification and
 Characterization in Memes: Technical Report for EXIST 2026
 Tasks 2.1, 2.2 and 2.3.
 ```
-
-The “Top-5” designation refers to the LNR challenge ranking associated with this project.

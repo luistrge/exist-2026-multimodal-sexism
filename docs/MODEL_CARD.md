@@ -21,13 +21,23 @@ The project is a research pipeline for multilingual sexism analysis in memes. It
 
 The official training release contains 3,984 memes: 2,005 in English and 1,979 in Spanish. The test release contains 1,053 memes. Data and annotations are not redistributed in this repository.
 
-All reported scores are internal validation or held-out routing diagnostics on labelled training data. They are not hidden test-set scores.
+The report-aligned F1 scores are development/model-selection values or routing
+diagnostics on labelled training data. They are separate from the official
+organizer-issued hidden-test results. The Task 2.3 development set is used for both
+expert/threshold selection and the reported internal 0.677 calculation.
 
 ## Performance summary
 
-- Task 2.1: 0.709 macro-F1; 0.815 F1 and 0.94 recall for `YES`.
-- Task 2.2: 0.637 conditional macro-F1; 0.485 routed diagnostic macro-F1.
-- Task 2.3: 0.677 facet macro-F1; 0.700 micro-F1; 0.694 samples-F1.
+- Official soft-soft run ranks: #14/139 (Task 2.1), #10/112 (Task 2.2), and #11/113 (Task 2.3).
+- Official hard-hard best run ranks: #21/212, #26/181, and #16/182, respectively.
+- Task 2.1 development/model selection: 0.709 macro-F1; 0.815 F1 and 0.94 recall for `YES`.
+- Task 2.2 development/model selection: 0.637 conditional macro-F1; 0.485 routed diagnostic macro-F1.
+- Task 2.3 development/model selection: 0.677 facet macro-F1; 0.700 micro-F1; 0.694 samples-F1.
+- Reproducible Task 2.1 CPU baseline: 0.660 macro-F1 on a fixed-threshold holdout.
+
+Official ranks are run-level and all-language. Full ICM values and provenance are
+in `results/RESULTS.md`; internal and official metrics must not be compared as if
+they used the same labels or selection protocol.
 
 ## Limitations and risks
 
@@ -37,6 +47,8 @@ All reported scores are internal validation or held-out routing diagnostics on l
 - Annotator disagreement and social bias can be learned by the system.
 - Physiological features introduce privacy and consent concerns and should never be repurposed for individual profiling.
 - Performance may differ across language, dialect, demographic references, image style, and distribution shift.
+- Development/model-selection reuse may make the report-aligned headline values
+  optimistic, especially Task 2.3.
 
 ## Recommended safeguards
 

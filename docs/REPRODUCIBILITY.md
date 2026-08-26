@@ -7,7 +7,28 @@ The notebooks preserve the audited experiment structure and execution evidence. 
 The repository separates two goals:
 
 - **Read and audit:** open the notebooks as checked in; executed outputs document the experiment selected for the report.
+- **Run the public baseline:** train and evaluate the CPU-only OCR/visual Logistic Regression system without external model caches.
 - **Recompute:** install the required dependencies, obtain the official data, and provide the relevant caches or allow model downloads.
+
+## Public baseline
+
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+
+exist2026-baseline train \
+  --data-root "/absolute/path/to/EXIST 2026 Dataset V0.2" \
+  --output-dir outputs/baseline-task21
+
+exist2026-baseline evaluate \
+  --data-root "/absolute/path/to/EXIST 2026 Dataset V0.2" \
+  --model-dir outputs/baseline-task21
+```
+
+The model uses a fixed threshold of 0.5; it does not tune that threshold on the
+674-example holdout. The audited seed-42 run is recorded in
+`results/reproducible_baseline_task21.json`.
 
 ## Expected data layout
 
@@ -37,6 +58,12 @@ export EXIST2026_MEMES_ROOT="/absolute/path/to/EXIST 2026 Memes Dataset"
 export EXIST2026_EVAL_ROOT="/absolute/path/to/evaluation"
 ```
 
+The release supplied for the 2026 challenge retains an `EXIST2025` prefix in its
+validator, gold filenames, and required submission `test_case` field. This is an
+upstream compatibility constraint, not a stale experiment reference. Repository
+loaders discover gold files by task suffix and isolate the submission value behind
+the `ORGANIZER_LEGACY_TEST_CASE` constant.
+
 The standalone Task 2.1 and Task 2.3 notebooks also accept `LNR_WORKSPACE`, `LNR_PROJECT_ROOT`, and task-specific output-directory variables documented in their setup cells.
 
 ## Environment
@@ -45,13 +72,13 @@ The standalone Task 2.1 and Task 2.3 notebooks also accept `LNR_WORKSPACE`, `LNR
 python3.11 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+pip install -e ".[notebooks]"
 ```
 
 For dense embeddings, transformers, tree boosters, and GPU branches:
 
 ```bash
-pip install -r requirements-heavy.txt
+pip install -e ".[notebooks,heavy]"
 ```
 
 Open Jupyter from the repository root so relative paths resolve consistently:
@@ -98,3 +125,15 @@ rows, routing losses, and final-distribution guards directly in the notebook JSO
 The repository validator checks notebook validity, required files, report-aligned
 CSV values, excluded stale artifacts, README evidence sections, and the byte
 identity of the final PDF.
+
+Run the software-quality suite with:
+
+```bash
+pip install -e ".[dev]"
+ruff check src tests
+black --check src tests
+pytest --cov=exist2026 --cov-report=term-missing
+```
+
+The tests use synthetic data and are safe to run in CI without the official
+release. GitHub Actions runs them on Python 3.11 and 3.12.

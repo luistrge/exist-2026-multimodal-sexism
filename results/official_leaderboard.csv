@@ -1,0 +1,7 @@
+task,protocol,run,rank,participant_runs,icm,icm_norm,secondary_metric,secondary_value,source_table
+task2_1,soft-soft,SerranoTeam_1,14,139,-0.0801,0.4871,cross_entropy,0.8969,6
+task2_1,hard-hard,SerranoTeam_1,21,212,0.2053,0.6044,f1_yes,0.7389,7
+task2_2,soft-soft,SerranoTeam_1,10,112,-1.1095,0.3820,cross_entropy,1.4263,8
+task2_2,hard-hard,SerranoTeam_3,26,181,-0.2319,0.4194,macro_f1,0.4430,9
+task2_3,soft-soft,SerranoTeam_1,11,113,-4.8477,0.2431,cross_entropy,2.1461,10
+task2_3,hard-hard,SerranoTeam_2,16,182,-0.6375,0.3677,macro_f1,0.4712,11

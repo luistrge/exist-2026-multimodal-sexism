@@ -1,0 +1,27 @@
+task,system,data_scope,selection_role,metric,value,metric_implementation,official_leaderboard_status
+task2_1,eight_member_soft_vote,674-example development set,threshold and ensemble model selection,macro_f1,0.709011,scikit-learn,not available in repository
+task2_1,eight_member_soft_vote,674-example development set,threshold and ensemble model selection,icm,0.148542,PyEvALL on internal data,not available in repository
+task2_1,eight_member_soft_vote,674-example development set,threshold and ensemble model selection,icm_norm,0.576267,PyEvALL on internal data,not available in repository
+task2_1,eight_member_soft_vote,674-example development set,threshold and ensemble model selection,icm_soft,-0.044835,PyEvALL on internal data,not available in repository
+task2_1,eight_member_soft_vote,674-example development set,threshold and ensemble model selection,icm_soft_norm,0.492652,PyEvALL on internal data,not available in repository
+task2_2,geom_mean_top5,357-example development set,candidate and ensemble model selection,macro_f1,0.636674,scikit-learn,not available in repository
+task2_2,geom_mean_top5,357-example development set,candidate and ensemble model selection,icm,,not retained for selected system,not available in repository
+task2_2,geom_mean_top5,357-example development set,candidate and ensemble model selection,icm_soft,,not retained for selected system,not available in repository
+task2_3,top8_soft_vote,398-example development set,expert ranking and per-label threshold model selection,facet_macro_f1,0.677110,scikit-learn,not available in repository
+task2_3,top8_soft_vote,398-example development set,expert ranking and per-label threshold model selection,icm,0.003900,PyEvALL on internal data,not available in repository
+task2_3,top8_soft_vote,398-example development set,expert ranking and per-label threshold model selection,icm_norm,0.500783,PyEvALL on internal data,not available in repository
+task2_3,top8_soft_vote,398-example development set,expert ranking and per-label threshold model selection,icm_soft,-5.945134,PyEvALL on internal data,not available in repository
+task2_3,top8_soft_vote,398-example development set,expert ranking and per-label threshold model selection,icm_soft_norm,0.138471,PyEvALL on internal data,not available in repository
+task2_1,reproducible_tfidf_visual_baseline,674-example fixed holdout,no threshold or model selection on holdout,macro_f1,0.660175,scikit-learn,not submitted
+task2_1,SerranoTeam_1,official hidden test all languages soft-soft,submitted run evaluated by organizers,rank,14,official EXIST 2026 overview Table 6,official leaderboard
+task2_1,SerranoTeam_1,official hidden test all languages soft-soft,submitted run evaluated by organizers,icm_soft_norm,0.4871,official EXIST 2026 overview Table 6,official leaderboard
+task2_1,SerranoTeam_1,official hidden test all languages hard-hard,submitted run evaluated by organizers,rank,21,official EXIST 2026 overview Table 7,official leaderboard
+task2_1,SerranoTeam_1,official hidden test all languages hard-hard,submitted run evaluated by organizers,icm_hard_norm,0.6044,official EXIST 2026 overview Table 7,official leaderboard
+task2_2,SerranoTeam_1,official hidden test all languages soft-soft,submitted run evaluated by organizers,rank,10,official EXIST 2026 overview Table 8,official leaderboard
+task2_2,SerranoTeam_1,official hidden test all languages soft-soft,submitted run evaluated by organizers,icm_soft_norm,0.3820,official EXIST 2026 overview Table 8,official leaderboard
+task2_2,SerranoTeam_3,official hidden test all languages hard-hard,submitted run evaluated by organizers,rank,26,official EXIST 2026 overview Table 9,official leaderboard
+task2_2,SerranoTeam_3,official hidden test all languages hard-hard,submitted run evaluated by organizers,icm_hard_norm,0.4194,official EXIST 2026 overview Table 9,official leaderboard
+task2_3,SerranoTeam_1,official hidden test all languages soft-soft,submitted run evaluated by organizers,rank,11,official EXIST 2026 overview Table 10,official leaderboard
+task2_3,SerranoTeam_1,official hidden test all languages soft-soft,submitted run evaluated by organizers,icm_soft_norm,0.2431,official EXIST 2026 overview Table 10,official leaderboard
+task2_3,SerranoTeam_2,official hidden test all languages hard-hard,submitted run evaluated by organizers,rank,16,official EXIST 2026 overview Table 11,official leaderboard
+task2_3,SerranoTeam_2,official hidden test all languages hard-hard,submitted run evaluated by organizers,icm_hard_norm,0.3677,official EXIST 2026 overview Table 11,official leaderboard

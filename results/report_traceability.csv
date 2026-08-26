@@ -20,3 +20,4 @@ report_section,claim,evidence_file,evidence_location,evidence_type
 7,"Cross-task physiological ablations",results/sensor_ablation.csv,"all rows",report-aligned table
 8,"Final submission distributions",results/submission_distribution.csv,"all rows",report-only canonical audit
 8,"Final report PDF identity",scripts/validate_repository.py,"SHA-256 check",automated integrity check
+"Official overview Tables 6–11","Serrano Team soft/hard hidden-test rankings and metrics",results/official_leaderboard.csv,"all rows",organizer-issued result

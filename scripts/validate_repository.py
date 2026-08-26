@@ -5,10 +5,10 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import math
 from pathlib import Path
 
 from audit_notebook_report_alignment import main as audit_notebook_report_alignment
-
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORT_SHA256 = "344ce1d849258436ac7db65d7f9c3d94c4ca979286fb2715db50eb8a896a8c00"
@@ -16,10 +16,14 @@ REPORT_SHA256 = "344ce1d849258436ac7db65d7f9c3d94c4ca979286fb2715db50eb8a896a8c0
 REQUIRED_FILES = [
     "README.md",
     "CITATION.cff",
+    "pyproject.toml",
     "requirements.txt",
     "requirements-heavy.txt",
+    ".github/workflows/quality.yml",
     "docs/METHODOLOGY.md",
+    "docs/EVALUATION_PROTOCOL.md",
     "docs/EVIDENCE_AUDIT.md",
+    "docs/LICENSING.md",
     "docs/REPORT_ALIGNMENT.md",
     "docs/REPRODUCIBILITY.md",
     "docs/MODEL_CARD.md",
@@ -29,9 +33,27 @@ REQUIRED_FILES = [
     "results/task23_per_facet.csv",
     "results/submission_distribution.csv",
     "results/report_traceability.csv",
+    "results/evaluation_scope.csv",
+    "results/official_leaderboard.csv",
+    "results/RESULTS.md",
+    "results/reproducible_baseline_task21.json",
     "scripts/audit_notebook_report_alignment.py",
+    "scripts/curate_notebook_outputs.py",
     "scripts/exist2026_meme_utils.py",
     "scripts/task2_2_metric_focused_pipeline.py",
+    "src/exist2026/__init__.py",
+    "src/exist2026/cli.py",
+    "src/exist2026/config.py",
+    "src/exist2026/data.py",
+    "src/exist2026/evaluation.py",
+    "src/exist2026/features.py",
+    "src/exist2026/model.py",
+    "src/exist2026/training.py",
+    "tests/conftest.py",
+    "tests/test_data.py",
+    "tests/test_evaluation.py",
+    "tests/test_features.py",
+    "tests/test_workflow.py",
 ]
 
 NOTEBOOKS = [
@@ -84,6 +106,61 @@ EXPECTED_SUBMISSION_DISTRIBUTION = {
     ("task2_3", "SEXUAL-VIOLENCE"): 194,
 }
 
+EXPECTED_SCOPED_METRICS = {
+    ("task2_1", "eight_member_soft_vote", "macro_f1"): 0.709011,
+    ("task2_1", "eight_member_soft_vote", "icm"): 0.148542,
+    ("task2_1", "eight_member_soft_vote", "icm_soft"): -0.044835,
+    ("task2_2", "geom_mean_top5", "macro_f1"): 0.636674,
+    ("task2_3", "top8_soft_vote", "facet_macro_f1"): 0.677110,
+    ("task2_3", "top8_soft_vote", "icm"): 0.003900,
+    ("task2_3", "top8_soft_vote", "icm_soft"): -5.945134,
+    ("task2_1", "reproducible_tfidf_visual_baseline", "macro_f1"): 0.660175,
+}
+
+EXPECTED_BASELINE_METRICS = {
+    "macro_f1": 0.6601752064032268,
+    "f1_yes": 0.710594315245478,
+    "precision_yes": 0.7372654155495979,
+    "recall_yes": 0.685785536159601,
+    "accuracy": 0.6676557863501483,
+}
+
+EXPECTED_OFFICIAL_RESULTS = {
+    ("task2_1", "soft-soft"): (
+        "SerranoTeam_1",
+        14,
+        139,
+        -0.0801,
+        0.4871,
+        "cross_entropy",
+        0.8969,
+        6,
+    ),
+    ("task2_1", "hard-hard"): ("SerranoTeam_1", 21, 212, 0.2053, 0.6044, "f1_yes", 0.7389, 7),
+    ("task2_2", "soft-soft"): (
+        "SerranoTeam_1",
+        10,
+        112,
+        -1.1095,
+        0.3820,
+        "cross_entropy",
+        1.4263,
+        8,
+    ),
+    ("task2_2", "hard-hard"): ("SerranoTeam_3", 26, 181, -0.2319, 0.4194, "macro_f1", 0.4430, 9),
+    ("task2_3", "soft-soft"): (
+        "SerranoTeam_1",
+        11,
+        113,
+        -4.8477,
+        0.2431,
+        "cross_entropy",
+        2.1461,
+        10,
+    ),
+    ("task2_3", "hard-hard"): ("SerranoTeam_2", 16, 182, -0.6375, 0.3677, "macro_f1", 0.4712, 11),
+}
+
 
 def require(condition: bool, message: str) -> None:
     if not condition:
@@ -110,18 +187,39 @@ def validate_notebooks() -> None:
         path = ROOT / "notebooks" / name
         notebook = json.loads(path.read_text(encoding="utf-8"))
         require(notebook.get("nbformat") == 4, f"Unsupported notebook format: {name}")
-        require(isinstance(notebook.get("cells"), list) and notebook["cells"], f"Empty notebook: {name}")
-        require(notebook["cells"][0].get("cell_type") == "markdown", f"Missing narrative header: {name}")
+        require(
+            isinstance(notebook.get("cells"), list) and notebook["cells"], f"Empty notebook: {name}"
+        )
+        require(
+            notebook["cells"][0].get("cell_type") == "markdown", f"Missing narrative header: {name}"
+        )
         parsed[name] = notebook
 
     # Outputs from superseded intermediate runs are deliberately absent.
     task21 = parsed["02_task21_binary_gate.ipynb"]
     task22 = parsed["03_task22_source_intention.ipynb"]
     task23 = parsed["04_task23_sexism_facets.ipynb"]
-    require(task22["cells"][23].get("outputs") == [], "Partial VLM cache output must remain excluded")
-    require(task22["cells"][43].get("outputs") == [], "Auxiliary Task 2.1 headline must remain excluded")
-    require(task22["cells"][45].get("outputs") == [], "Superseded Task 2.2 distribution must remain excluded")
-    require(task23["cells"][20].get("outputs") == [], "Superseded Task 2.3 distribution must remain excluded")
+    require(
+        task22["cells"][23].get("outputs") == [], "Partial VLM cache output must remain excluded"
+    )
+    require(
+        task22["cells"][43].get("outputs") == [], "Auxiliary Task 2.1 headline must remain excluded"
+    )
+    require(
+        task22["cells"][45].get("outputs") == [],
+        "Superseded Task 2.2 distribution must remain excluded",
+    )
+    require(
+        task21["cells"][13].get("outputs") == [],
+        "Task 2.1 dense training logs must remain excluded",
+    )
+    require(
+        task21["cells"][14].get("outputs") == [], "Task 2.1 transformer logs must remain excluded"
+    )
+    require(
+        task23["cells"][20].get("outputs") == [],
+        "Superseded Task 2.3 distribution must remain excluded",
+    )
     require("expected_task21" in cell_text(task21["cells"][15]), "Task 2.1 report guard is missing")
     require("expected_task22" in cell_text(task22["cells"][45]), "Task 2.2 report guard is missing")
     require(
@@ -137,10 +235,52 @@ def validate_notebooks() -> None:
     overview = "".join(cell_text(cell) for cell in parsed["00_project_overview.ipynb"]["cells"])
     for token in ("0.709", "0.637", "0.485", "0.677", "0.674"):
         require(token in overview, f"Overview is missing report value {token}")
+    for token in ("#14/139", "#10/112", "#11/113"):
+        require(token in overview, f"Overview is missing official position {token}")
+    require("Top-5" not in overview, "Superseded Top-5 claim remains in overview")
+
+    full_text = "\n".join(nested_strings(parsed))
+    for residue in (
+        "D:/LNR",
+        "D:\\LNR",
+        "/home/",
+        "/content/drive/MyDrive/LNR",
+        "C:\\Users\\",
+        "\x1b[",
+    ):
+        require(residue not in full_text, f"Notebook residue remains: {residue}")
+
+    require(
+        "development/model-selection" in cell_text(task21["cells"][0]),
+        "Task 2.1 headline scope is missing",
+    )
+    require(
+        "development/model-selection" in cell_text(task22["cells"][0]),
+        "Task 2.2 headline scope is missing",
+    )
+    task23_header = cell_text(task23["cells"][0])
+    require("development/model-selection" in task23_header, "Task 2.3 headline scope is missing")
+    require(
+        "same 398-example development set" in task23_header
+        and "not an independent holdout estimate" in task23_header,
+        "Task 2.3 model-selection warning is missing",
+    )
 
 
 def cell_text(cell: dict) -> str:
     return "".join(cell.get("source", []))
+
+
+def nested_strings(value: object) -> list[str]:
+    """Flatten notebook JSON strings so residue checks see decoded paths."""
+
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, list):
+        return [text for item in value for text in nested_strings(item)]
+    if isinstance(value, dict):
+        return [text for item in value.values() for text in nested_strings(item)]
+    return []
 
 
 def validate_metrics() -> None:
@@ -161,8 +301,7 @@ def validate_metrics() -> None:
         newline="", encoding="utf-8"
     ) as handle:
         distribution = {
-            (row["task"], row["label"]): int(row["count"])
-            for row in csv.DictReader(handle)
+            (row["task"], row["label"]): int(row["count"]) for row in csv.DictReader(handle)
         }
     require(
         distribution == EXPECTED_SUBMISSION_DISTRIBUTION,
@@ -178,7 +317,10 @@ def validate_metrics() -> None:
             )
             for row in csv.DictReader(handle)
         }
-    require(sensor_rows == EXPECTED_SENSOR_ABLATIONS, f"Sensor ablations differ from report: {sensor_rows}")
+    require(
+        sensor_rows == EXPECTED_SENSOR_ABLATIONS,
+        f"Sensor ablations differ from report: {sensor_rows}",
+    )
 
     with (ROOT / "results" / "task23_per_facet.csv").open(newline="", encoding="utf-8") as handle:
         facet_rows = {
@@ -192,6 +334,80 @@ def validate_metrics() -> None:
         }
     require(facet_rows == EXPECTED_FACETS, f"Per-facet results differ from report: {facet_rows}")
 
+    with (ROOT / "results" / "evaluation_scope.csv").open(newline="", encoding="utf-8") as handle:
+        scope_rows = list(csv.DictReader(handle))
+    scoped = {(row["task"], row["system"], row["metric"]): row for row in scope_rows}
+    for key, expected in EXPECTED_SCOPED_METRICS.items():
+        require(key in scoped, f"Missing scoped metric: {key}")
+        actual = float(scoped[key]["value"])
+        require(
+            math.isclose(actual, expected, abs_tol=1e-9),
+            f"Unexpected scoped value for {key}: {actual}",
+        )
+    for row in scope_rows:
+        status = row["official_leaderboard_status"]
+        if status == "official leaderboard":
+            require(
+                row["data_scope"].startswith("official hidden test")
+                and row["metric_implementation"].startswith("official EXIST 2026 overview"),
+                "An official metric is missing organizer provenance",
+            )
+        else:
+            require(
+                status in {"not available in repository", "not submitted"},
+                f"Unknown leaderboard status: {status}",
+            )
+    task23_scope = scoped[("task2_3", "top8_soft_vote", "facet_macro_f1")]
+    require(
+        task23_scope["selection_role"] == "expert ranking and per-label threshold model selection",
+        "Task 2.3 selection reuse is not recorded",
+    )
+
+    with (ROOT / "results" / "official_leaderboard.csv").open(
+        newline="", encoding="utf-8"
+    ) as handle:
+        official_rows = {
+            (row["task"], row["protocol"]): (
+                row["run"],
+                int(row["rank"]),
+                int(row["participant_runs"]),
+                float(row["icm"]),
+                float(row["icm_norm"]),
+                row["secondary_metric"],
+                float(row["secondary_value"]),
+                int(row["source_table"]),
+            )
+            for row in csv.DictReader(handle)
+        }
+    require(
+        official_rows == EXPECTED_OFFICIAL_RESULTS,
+        f"Official leaderboard values changed: {official_rows}",
+    )
+
+
+def validate_baseline() -> None:
+    path = ROOT / "results" / "reproducible_baseline_task21.json"
+    result = json.loads(path.read_text(encoding="utf-8"))
+    protocol = result["protocol"]
+    require(protocol["seed"] == 42, "Baseline seed changed")
+    require(protocol["train_examples"] == 2696, "Baseline training split changed")
+    require(protocol["validation_examples"] == 674, "Baseline validation split changed")
+    require(protocol["threshold"] == 0.5, "Baseline fixed threshold changed")
+    require(protocol["threshold_tuned_on_validation"] is False, "Baseline threshold leaked")
+    for metric, expected in EXPECTED_BASELINE_METRICS.items():
+        actual = float(result["metrics"][metric])
+        require(
+            math.isclose(actual, expected, abs_tol=1e-12), f"Baseline {metric} changed: {actual}"
+        )
+    require(
+        result["confusion_matrix"]["values"] == [[175, 98], [126, 275]],
+        "Baseline confusion matrix changed",
+    )
+    require(
+        "not a submitted system" in result["relationship_to_report"],
+        "Baseline/report boundary is missing",
+    )
+
 
 def validate_readme() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -202,8 +418,14 @@ def validate_readme() -> None:
     ):
         require(relative in readme, f"README does not link to {relative}")
         require((ROOT / relative).exists(), f"Broken local README target: {relative}")
-    require("Top-5" in readme and "LNR" in readme, "Top-5 LNR recognition is missing")
+    require("Top-5" not in readme, "Superseded Top-5 claim remains in README")
+    for position in ("#14 of 139", "#10 of 112", "#11 of 113"):
+        require(position in readme, f"README is missing official position {position}")
     require("hidden test-set scores" in readme, "Evaluation-scope disclaimer is missing")
+    require("20-second TL;DR" in readme, "README TL;DR is missing")
+    require("Best official soft run" in readme, "Official/internal metric separation is missing")
+    require("0.660 held-out macro-F1" in readme, "Reproducible baseline result is missing")
+    require("No open-source license has been applied" in readme, "Licensing status is missing")
     for heading in (
         "## Experimental reasoning and decision logic",
         "## Task 2.1 — Protecting downstream recall",
@@ -220,6 +442,7 @@ def main() -> None:
     validate_report()
     validate_notebooks()
     validate_metrics()
+    validate_baseline()
     validate_readme()
     audit_notebook_report_alignment()
     print("Repository validation passed.")

@@ -9,8 +9,17 @@ The audit distinguishes three evidence types:
 1. **Executed output:** metrics, model rankings, confusion matrices, or classifications preserved in a notebook execution.
 2. **Executable source:** the code that constructs the reported split, model family, ensemble, threshold, or export guard.
 3. **Report-aligned narrative/table:** a value that belongs to the final submission audit but cannot be reconstructed without the exact external model caches or submitted JSON files.
+4. **Organizer-issued result:** a hidden-test rank or metric published in the official EXIST 2026 overview, tied to a run and evaluation protocol.
 
 This distinction matters. A final submission count is not a performance metric, and a conditional downstream score is not equivalent to a routed cascade score.
+
+A fourth distinction is now explicit: PyEvALL ICM/ICM-Soft calculated on internal
+labels are not organizer-issued leaderboard results. `results/evaluation_scope.csv`
+records both the data role and metric implementation.
+
+The official overview tables were checked separately. Serrano Team's best soft
+positions are #14, #10, and #11 for Tasks 2.1–2.3; they are preserved in
+`results/official_leaderboard.csv` and explained in `results/RESULTS.md`.
 
 ## What was checked
 
@@ -23,8 +32,12 @@ This distinction matters. A final submission count is not a performance metric, 
 - Cross-task physiological ablations.
 - Final hard-run distributions from the report.
 - Byte identity of the published PDF against the audited source.
+- Official soft-soft and hard-hard run positions and metrics from overview Tables 6–11.
+- Whether every headline is labelled as development/model selection, routing
+  diagnostic, fixed-threshold holdout baseline, or official leaderboard result.
 
-The machine-readable mapping is in `results/report_traceability.csv`. Run:
+The internal report mapping is in `results/report_traceability.csv`; official
+leaderboard provenance is in `results/official_leaderboard.csv`. Run:
 
 ```bash
 python scripts/audit_notebook_report_alignment.py

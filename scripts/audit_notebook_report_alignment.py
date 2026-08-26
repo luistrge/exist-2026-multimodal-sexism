@@ -9,7 +9,6 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOK_DIR = ROOT / "notebooks"
 
@@ -106,8 +105,8 @@ def main() -> None:
         ("fit:   n=1111", "Task 2.2 fit size"),
         ("calib: n= 314", "Task 2.2 calibration size"),
         ("dev:   n= 357", "Task 2.2 development size"),
-        ("Candidatos totales:   37", "Task 2.2 candidate count"),
-        ("Candidatos robustos:  31", "Task 2.2 stable-pool count"),
+        ("Total candidates:   37", "Task 2.2 candidate count"),
+        ("Stable candidates:  31", "Task 2.2 stable-pool count"),
         ("geom_mean_top5", "Task 2.2 selected ensemble"),
         ("0.636674", "Task 2.2 conditional macro-F1"),
         ("0.468750", "Task 2.2 JUDGEMENTAL F1"),
@@ -115,9 +114,15 @@ def main() -> None:
         ("n_lost_sexist_to_NO", "Task 2.2 routing-loss field"),
         ("114", "Task 2.2 lost sexist examples"),
         ("VLM_WordChar_LR", "Task 2.2 VLM LR member"),
-        ("TransformerV2_xlm-roberta-base_qwen_rich_e4_L256_lr1.5e-05_soft", "Task 2.2 XLM-R/Qwen member"),
+        (
+            "TransformerV2_xlm-roberta-base_qwen_rich_e4_L256_lr1.5e-05_soft",
+            "Task 2.2 XLM-R/Qwen member",
+        ),
         ("VLM_WordChar_ComplementNB", "Task 2.2 VLM ComplementNB member"),
-        ("TransformerV2_distilbert-base-multilingual-cased_ocr_lang_e4_L256_lr3e-05_soft", "Task 2.2 DistilBERT member"),
+        (
+            "TransformerV2_distilbert-base-multilingual-cased_ocr_lang_e4_L256_lr3e-05_soft",
+            "Task 2.2 DistilBERT member",
+        ),
         ("Text_WordChar_ComplementNB_a0.2", "Task 2.2 OCR anchor"),
     ]:
         require(task22_output, token, claim, passes)
@@ -128,8 +133,12 @@ def main() -> None:
         "Task 2.2 auxiliary-gate scope disclosure",
         passes,
     )
-    require_absent(task22_output, "hard={'DIRECT': 493, 'NO': 465", "superseded Task 2.2 distribution", passes)
-    require_absent(task22_output, "Task 2.1 dev macro-F1: 0.7779", "superseded auxiliary-gate headline", passes)
+    require_absent(
+        task22_output, "hard={'DIRECT': 493, 'NO': 465", "superseded Task 2.2 distribution", passes
+    )
+    require_absent(
+        task22_output, "Task 2.1 dev macro-F1: 0.7779", "superseded auxiliary-gate headline", passes
+    )
 
     task23_members = [
         "text+image_intfloat_multilingual_e5_base_openai_clip_vit_base_patch32_mlp",
@@ -144,7 +153,7 @@ def main() -> None:
     for index, member in enumerate(task23_members, 1):
         require(task23_output, member, f"Task 2.3 retained member {index}", passes)
     for token, claim in [
-        ("Filas Task 2.3 v2 con al menos una faceta: 1990 de 3984", "Task 2.3 positive population"),
+        ("Task 2.3 v2 rows with at least one facet: 1990 of 3984", "Task 2.3 positive population"),
         ("Train/dev: (1592, 973) (398, 973)", "Task 2.3 split"),
         ("0.67711", "Task 2.3 facet macro-F1"),
         ("0.700056", "Task 2.3 micro-F1"),
@@ -157,7 +166,9 @@ def main() -> None:
     ]:
         require(task23_output, token, claim, passes)
     require(task23_source, "expected_task23", "Task 2.3 report-distribution guard", passes)
-    require(task23_source, "EXIST2026_EXPORT_FINAL_SUBMISSIONS", "Task 2.3 opt-in final export", passes)
+    require(
+        task23_source, "EXIST2026_EXPORT_FINAL_SUBMISSIONS", "Task 2.3 opt-in final export", passes
+    )
 
     print(f"Notebook/report alignment audit passed: {len(passes)} checks.")
     for claim in passes:
